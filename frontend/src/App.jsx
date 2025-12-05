@@ -57,12 +57,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center">
       <div className="bg-white shadow-md rounded-lg p-8 max-w-5xl w-full">
-        {/* <h1 className="text-2xl font-bold mb-2 text-slate-800">
-          Document Ingestion Frontend
-        </h1>
-        <p className="text-slate-600 mb-4 text-sm">
-          Backend expected at <code>http://localhost:5000</code>.
-        </p> */}
+        
 
         <FileUpload onUploadSuccess={handleUploadSuccess} />
 
