@@ -15,6 +15,7 @@ export default function DocumentPreview({ document }) {
         Document Details
       </h2>
 
+      {/* Metadata Section */}
       <div className="space-y-1 text-sm text-slate-700">
         <p>
           <span className="font-medium">Source name:</span>{' '}
@@ -38,17 +39,51 @@ export default function DocumentPreview({ document }) {
         </p>
       </div>
 
-      <div className="mt-4">
-        <h3 className="text-sm font-semibold text-slate-800 mb-2">
-          Extracted Text (preview)
-        </h3>
-        <pre
-          className="text-sm text-slate-700 bg-slate-50 border border-slate-200 
-                     rounded-md p-4 max-h-[80vh] overflow-auto whitespace-pre-wrap"
-        >
-          {document.extractedText || '(No text extracted)'}
-        </pre>
-      </div>
+      {/* TABLE PREVIEW (CSV/XLS/XLSX) */}
+      {document.isTable && document.tableRows && (
+        <div className="mt-6 border rounded-md p-4 bg-white shadow-sm">
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">
+            Table Preview
+          </h3>
+
+          <div className="overflow-auto max-h-[70vh] border rounded">
+            <table className="min-w-full text-sm border-collapse">
+              <tbody>
+                {document.tableRows.map((row, rowIndex) => (
+                  <tr key={rowIndex} className="border-b">
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        className="border px-3 py-2 whitespace-nowrap"
+                      >
+                        {cell !== null && cell !== undefined
+                          ? cell.toString()
+                          : ""}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TEXT PREVIEW (non-table formats) */}
+      {!document.isTable && (
+        <div className="mt-6 border rounded-md p-4 bg-white shadow-sm">
+          <h3 className="text-sm font-semibold text-slate-800 mb-2">
+            Extracted Text (preview)
+          </h3>
+
+          <pre
+            className="text-sm text-slate-700 bg-slate-50 border border-slate-200 
+                       rounded-md p-4 max-h-[70vh] overflow-auto whitespace-pre-wrap"
+          >
+            {document.extractedText || "(No text extracted)"}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
