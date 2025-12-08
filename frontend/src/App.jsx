@@ -124,7 +124,7 @@ function App() {
         <div className="flex gap-5 flex-1 min-h-0">
           {/* LEFT SIDE: upload + search/filter + grouped list */}
           <div className="w-1/2 flex flex-col gap-3 min-h-0">
-            <FileUpload onUploadSuccess={handleUploadSuccess} />
+            <FileUpload onUploadSuccess={handleUploadSuccess} /> 
 
             {/* Error message */}
             {error && (

@@ -100,7 +100,7 @@ export default function DocumentPreview({ document: doc }) {
           </div>
           <div className="min-w-0">
             <h2 className="text-sm font-semibold tracking-wide text-slate-50">
-              Content Preview
+                Preview
             </h2>
             <p className="text-[11px] text-slate-300/80 truncate">
               {originalFileName || 'Untitled'} · {mimeType || 'unknown'} ·{' '}
@@ -186,13 +186,12 @@ export default function DocumentPreview({ document: doc }) {
 
         {/* TEXT PREVIEW */}
         {!isTable && (
-          <div className="border border-slate-700/80 rounded-xl bg-slate-900/70 shadow-xl shadow-cyan-500/5">
+          <div className="border h-[100vh] border-slate-700/80 rounded-xl bg-slate-900/70 shadow-xl shadow-cyan-500/5 ">
             <div className="px-4 py-2.5 border-b border-slate-800/80 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-cyan-400" />
-                <h3 className="text-xs font-semibold tracking-wide text-slate-50">
+                 {/* <h3 className="text-xs font-semibold tracking-wide text-slate-50">
                   Extracted Text (preview)
-                </h3>
+                </h3> */}
               </div>
               <span className="text-[10px] text-slate-400 uppercase tracking-wide">
                 Read-only
@@ -200,7 +199,7 @@ export default function DocumentPreview({ document: doc }) {
             </div>
 
             <pre
-              className="text-[12px] leading-relaxed text-slate-100/90 bg-slate-950/40 
+              className="text-[12px] leading-relaxed h-[80vh] text-slate-100/90 no-scrollbar bg-slate-950/40 
                          font-mono p-4 rounded-b-xl max-h-[70vh]
                          overflow-y-auto overflow-x-auto
                          whitespace-pre break-words max-w-full
