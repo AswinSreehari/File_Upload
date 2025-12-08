@@ -186,7 +186,7 @@ export default function DocumentPreview({ document: doc }) {
 
         {/* TEXT PREVIEW */}
         {!isTable && (
-          <div className="border h-[100vh] border-slate-700/80 rounded-xl bg-slate-900/70 shadow-xl shadow-cyan-500/5 ">
+          <div className="border h-[100vh] no-scrollbar border-slate-700/80 rounded-xl bg-slate-900/70 shadow-xl shadow-cyan-500/5 ">
             <div className="px-4 py-2.5 border-b border-slate-800/80 flex items-center justify-between">
               <div className="flex items-center gap-2">
                  {/* <h3 className="text-xs font-semibold tracking-wide text-slate-50">
