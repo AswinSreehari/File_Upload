@@ -1,5 +1,5 @@
 // backend/server.js
-const express = require('express');  
+const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -7,19 +7,20 @@ const documentsRouter = require('./routes/documents');
 
 const app = express();
 
-// Middlewares
+// CORS (must match exact origins, no trailing slash)
 app.use(
   cors({
     origin: [
-      "https://file-upload-brown.vercel.app/",   
-      "http://localhost:5173",                       
+      'https://file-upload-brown.vercel.app',  
+      'http://localhost:5173',                
     ],
-    methods: "GET,POST,PUT,PATCH,DELETE",
-    credentials: true,
+    methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
   })
 );
 
+// Body parsers
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Health check
 app.get('/', (req, res) => {
