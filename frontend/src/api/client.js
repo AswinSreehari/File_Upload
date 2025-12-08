@@ -1,6 +1,4 @@
-// frontend/src/api/client.js
-
-const API_BASE_URL = 'http://localhost:5000';
+export const API_BASE_URL = 'http://localhost:5000';
 
 export async function uploadDocument(file) {
   const formData = new FormData();

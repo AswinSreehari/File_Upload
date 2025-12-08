@@ -1,4 +1,4 @@
-// backend/controllers/documentsController.js
+const fs = require("fs");
 const path = require("path");
 const textExtractService = require("../services/textExtractService");
 const {
@@ -77,8 +77,7 @@ exports.uploadDocument = async (req, res) => {
       await createPdfFromText(extractedText, pdfPath);
     }
 
-    // Step 5 — Save document record in memory
-    const docRecord = {
+     const docRecord = {
       id: nextId++,
       originalFileName: file.originalname,
       storedFileName: file.filename,
@@ -94,8 +93,7 @@ exports.uploadDocument = async (req, res) => {
 
     documents.push(docRecord);
 
-    // Step 6 — Respond
-    res.status(201).json({
+     res.status(201).json({
       message: "File processed successfully",
       document: {
         id: docRecord.id,
@@ -115,4 +113,34 @@ exports.uploadDocument = async (req, res) => {
       error: error.message,
     });
   }
+}; 
+
+// GET /documents/:id/pdf
+exports.downloadDocumentPdf = (req, res) => {
+  const id = Number(req.params.id);
+  const doc = documents.find((d) => d.id === id);
+
+  if (!doc) {
+    return res.status(404).json({ message: "Document not found" });
+  }
+
+  if (!doc.pdfPath) {
+    return res.status(404).json({ message: "Canonical PDF not available" });
+  }
+
+  if (!fs.existsSync(doc.pdfPath)) {
+    console.error("PDF file not found on disk:", doc.pdfPath);
+    return res.status(404).json({ message: "PDF file missing on server" });
+  }
+
+  // Send the PDF file as a download
+  res.download(doc.pdfPath, path.basename(doc.pdfPath), (err) => {
+    if (err) {
+      console.error("PDF download error:", err);
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Error downloading PDF" });
+      }
+    }
+  });
 };
+

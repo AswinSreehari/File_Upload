@@ -1,4 +1,14 @@
 // frontend/src/components/DocumentPreview.jsx
+import { API_BASE_URL } from '../api/client';
+
+function formatBytes(bytes) {
+  if (bytes === 0 || bytes === undefined || bytes === null) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const value = bytes / Math.pow(k, i);
+  return `${value.toFixed(2)} ${sizes[i]}`;
+}
 
 export default function DocumentPreview({ document }) {
   if (!document) {
@@ -8,6 +18,19 @@ export default function DocumentPreview({ document }) {
       </div>
     );
   }
+
+  const downloadUrl = `${API_BASE_URL}/documents/${document.id}/pdf`;
+
+  const {
+    originalFileName,
+    storedFileName,
+    mimeType,
+    size,
+    pdfPath,
+    isTable,
+    tableRows,
+    extractedText,
+  } = document;
 
   return (
     <div className="mt-4 border-t border-slate-200 pt-4">
@@ -19,28 +42,34 @@ export default function DocumentPreview({ document }) {
       <div className="space-y-1 text-sm text-slate-700">
         <p>
           <span className="font-medium">Source name:</span>{' '}
-          {document.originalFileName}
+          {originalFileName || '—'}
         </p>
         <p>
           <span className="font-medium">Stored file:</span>{' '}
-          {document.storedFileName}
+          {storedFileName || '—'}
         </p>
         <p>
           <span className="font-medium">Type:</span>{' '}
-          {document.mimeType}
+          {mimeType || '—'}
         </p>
         <p>
           <span className="font-medium">Size:</span>{' '}
-          {document.size} bytes
-        </p>
-        <p>
-          <span className="font-medium">Canonical PDF path:</span>{' '}
-          <span className="break-all">{document.pdfPath}</span>
+          {size !== undefined && size !== null ? `${formatBytes(size)} (${size} bytes)` : '—'}
         </p>
       </div>
 
+      {/* Download button */}
+      <div className="mt-4">
+        <a
+          href={downloadUrl}
+          className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-slate-800 text-white hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600"
+        >
+          Download PDF
+        </a>
+      </div>
+
       {/* TABLE PREVIEW (CSV/XLS/XLSX) */}
-      {document.isTable && document.tableRows && (
+      {isTable && Array.isArray(tableRows) && tableRows.length > 0 && (
         <div className="mt-6 border rounded-md p-4 bg-white shadow-sm">
           <h3 className="text-sm font-semibold text-slate-800 mb-3">
             Table Preview
@@ -49,7 +78,7 @@ export default function DocumentPreview({ document }) {
           <div className="overflow-auto max-h-[70vh] border rounded">
             <table className="min-w-full text-sm border-collapse">
               <tbody>
-                {document.tableRows.map((row, rowIndex) => (
+                {tableRows.map((row, rowIndex) => (
                   <tr key={rowIndex} className="border-b">
                     {row.map((cell, cellIndex) => (
                       <td
@@ -58,7 +87,7 @@ export default function DocumentPreview({ document }) {
                       >
                         {cell !== null && cell !== undefined
                           ? cell.toString()
-                          : ""}
+                          : ''}
                       </td>
                     ))}
                   </tr>
@@ -70,7 +99,7 @@ export default function DocumentPreview({ document }) {
       )}
 
       {/* TEXT PREVIEW (non-table formats) */}
-      {!document.isTable && (
+      {!isTable && (
         <div className="mt-6 border rounded-md p-4 bg-white shadow-sm">
           <h3 className="text-sm font-semibold text-slate-800 mb-2">
             Extracted Text (preview)
@@ -80,7 +109,7 @@ export default function DocumentPreview({ document }) {
             className="text-sm text-slate-700 bg-slate-50 border border-slate-200 
                        rounded-md p-4 max-h-[70vh] overflow-auto whitespace-pre-wrap"
           >
-            {document.extractedText || "(No text extracted)"}
+            {extractedText || '(No text extracted)'}
           </pre>
         </div>
       )}

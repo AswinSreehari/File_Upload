@@ -13,4 +13,6 @@ router.get('/:id', documentsController.getDocumentById);
 // POST /documents/upload
 router.post('/upload', upload.single('file'), documentsController.uploadDocument);
 
+router.get('/:id/pdf', documentsController.downloadDocumentPdf);
+
 module.exports = router;
