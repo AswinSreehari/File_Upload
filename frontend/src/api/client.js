@@ -1,4 +1,5 @@
-export const API_BASE_URL = 'http://localhost:5000';
+// export const API_BASE_URL = 'http://localhost:5000';
+export const API_BASE_URL = 'https://doc-converter-backend-b01i.onrender.com';
 
 export async function uploadDocument(file) {
   const formData = new FormData();

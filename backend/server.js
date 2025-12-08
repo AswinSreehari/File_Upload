@@ -8,7 +8,17 @@ const documentsRouter = require('./routes/documents');
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://file-upload-brown.vercel.app/",   
+      "http://localhost:5173",                       
+    ],
+    methods: "GET,POST,PUT,PATCH,DELETE",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // Health check
