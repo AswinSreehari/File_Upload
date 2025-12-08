@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useEffect, useState } from 'react';
 import FileUpload from './components/FileUpload';
 import DocumentList from './components/DocumentList';
@@ -16,10 +17,13 @@ function App() {
     try {
       setLoadingDocs(true);
       setError('');
-      const res = await fetchDocuments(); // { count, items }
-      setDocuments(res.items || []);
-      if (!selectedId && res.items && res.items.length > 0) {
-        handleSelectDocument(res.items[0].id);
+      const res = await fetchDocuments(); // expected shape: { count, items }
+      const items = res.items || [];
+      setDocuments(items);
+
+      // If nothing is selected yet but we have docs, select the first one
+      if (!selectedId && items.length > 0) {
+        handleSelectDocument(items[0].id);
       }
     } catch (err) {
       console.error(err);
@@ -45,7 +49,7 @@ function App() {
   };
 
   const handleUploadSuccess = () => {
-    // After upload, refresh list
+    // After upload, refresh the document list (and auto-select first item)
     loadDocuments();
   };
 
@@ -55,24 +59,27 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-      <div className="bg-white shadow-md rounded-lg p-8 max-w-5xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50">
+      <div className="p-4 mx-auto h-full flex flex-col px-4 py-6 gap-4">
         
 
-        <FileUpload onUploadSuccess={handleUploadSuccess} />
+        {/* Main 2-column layout */}
+        <div className="flex gap-5 flex-1">
+          {/* LEFT SIDE: upload + grouped list */}
+          <div className="w-1/2 flex flex-col gap-3">
+            <FileUpload onUploadSuccess={handleUploadSuccess} />
 
-        {error && (
-          <p className="mt-2 text-sm text-red-600">
-            {error}
-          </p>
-        )}
+            {error && (
+              <p className="text-[11px] text-red-400 bg-red-950/40 border border-red-800/60 rounded-lg px-3 py-1.5">
+                {error}
+              </p>
+            )}
 
-        {loadingDocs ? (
-          <p className="mt-4 text-sm text-slate-500">Loading documents...</p>
-        ) : (
-          <div className="mt-4 flex flex-col md:flex-row gap-6">
-            {/* Left: document list (narrower) */}
-            <div className="md:w-1/3">
+            {loadingDocs ? (
+              <div className="mt-2 flex-1 flex items-center justify-center rounded-2xl border border-slate-800/80 bg-slate-900/60 text-sm text-slate-300">
+                Loading documents...
+              </div>
+            ) : (
               <DocumentList
                 documents={documents.map((d) => ({
                   ...d,
@@ -81,20 +88,20 @@ function App() {
                 onSelect={handleSelectDocument}
                 selectedId={selectedId}
               />
-            </div>
-
-            {/* Right: document preview (wider) */}
-            <div className="md:w-2/3">
-              {loadingDetail ? (
-                <p className="text-sm text-slate-500">
-                  Loading document details...
-                </p>
-              ) : (
-                <DocumentPreview document={selectedDoc} />
-              )}
-            </div>
+            )}
           </div>
-        )}
+
+          {/* RIGHT SIDE: content preview + download button in header */}
+          <div className="flex-1 min-w-0">
+            {loadingDetail ? (
+              <div className="h-full flex items-center justify-center rounded-2xl border border-slate-800/80 bg-slate-900/70 text-sm text-slate-300 shadow-[0_18px_45px_rgba(15,23,42,0.65)]">
+                Loading document details...
+              </div>
+            ) : (
+              <DocumentPreview document={selectedDoc} />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
