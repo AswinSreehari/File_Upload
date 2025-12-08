@@ -199,8 +199,8 @@ export default function DocumentPreview({ document: doc }) {
             </div>
 
             <pre
-              className="text-[12px] leading-relaxed h-[80vh] text-slate-100/90 no-scrollbar bg-slate-950/40 
-                         font-mono p-4 rounded-b-xl max-h-[70vh]
+              className="text-[13px] leading-relaxed h-full text-slate-100/90 no-scrollbar bg-slate-950/40 
+                         font-mono p-4 rounded-b-xl  
                          overflow-y-auto overflow-x-auto
                          whitespace-pre break-words max-w-full
                          [tab-size:2]"
