@@ -30,6 +30,15 @@ function App() {
       // If nothing is selected yet but we have docs, select the first one
       if (!selectedId && items.length > 0) {
         handleSelectDocument(items[0].id);
+      } else {
+        // If we still have selectedId, try to refresh its details
+        if (selectedId) {
+          const stillExists = items.find((d) => d.id === selectedId);
+          if (!stillExists && items.length > 0) {
+            // previously selected was removed — select first
+            handleSelectDocument(items[0].id);
+          }
+        }
       }
     } catch (err) {
       console.error(err);
@@ -115,16 +124,60 @@ function App() {
     setExtensionFilter('all');
   };
 
+  // -----------------------
+  // Delete functionality
+  // -----------------------
+  const handleDelete = async (id) => {
+    try {
+      const docToDelete = documents.find((d) => d.id === id);
+      const name = docToDelete?.originalFileName || 'this file';
+
+      // Simple confirmation dialog — DocumentList may implement themed modal, but keep a safety confirm here
+      const ok = window.confirm(`Are you sure you want to delete "${name}"? This cannot be undone.`);
+      if (!ok) return;
+
+      // Call backend DELETE. Using relative path to play nice with proxy or same-origin setups.
+      const res = await fetch(`/documents/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => null);
+        throw new Error(`Delete failed (${res.status}) ${text ? '- ' + text : ''}`);
+      }
+
+      // Update client state (remove the doc)
+      setDocuments((prev) => prev.filter((d) => d.id !== id));
+
+      // If the deleted doc was selected, clear selectedDoc and choose a new one
+      if (selectedId === id) {
+        setSelectedId(null);
+        setSelectedDoc(null);
+
+        // pick a new first doc from the filtered list (after removal)
+        const remaining = documents.filter((d) => d.id !== id);
+        if (remaining.length > 0) {
+          // load details for the first remaining doc
+          handleSelectDocument(remaining[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      // Show a friendly message
+      setError(err.message || 'Failed to delete document');
+      // Optionally refresh documents to sync state
+      loadDocuments();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50">
       <div className="p-4 mx-auto h-full flex flex-col px-4 py-6 gap-4">
-        
-
         {/* Main 2-column layout */}
         <div className="flex gap-5 flex-1 min-h-0">
           {/* LEFT SIDE: upload + search/filter + grouped list */}
           <div className="w-1/2 flex flex-col gap-3 min-h-0">
-            <FileUpload onUploadSuccess={handleUploadSuccess} /> 
+            <FileUpload onUploadSuccess={handleUploadSuccess} />
 
             {/* Error message */}
             {error && (
@@ -210,6 +263,7 @@ function App() {
                 }))}
                 onSelect={handleSelectDocument}
                 selectedId={selectedId}
+                onDelete={handleDelete} // <-- pass delete handler to DocumentList
               />
             )}
           </div>

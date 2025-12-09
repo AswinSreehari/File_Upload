@@ -1,22 +1,28 @@
-// export const API_BASE_URL = 'http://localhost:5000';
-export const API_BASE_URL = 'https://doc-converter-backend-b01i.onrender.com';
-
-export async function uploadDocument(file) {
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+ 
+// src/api/client.js
+export async function uploadDocuments(files) {
+  // files: array of File objects
   const formData = new FormData();
-  formData.append('file', file);
+  files.forEach((file) => {
+    formData.append("files", file); // append multiple entries with the same field name
+  });
 
   const res = await fetch(`${API_BASE_URL}/documents/upload`, {
-    method: 'POST',
+    method: "POST",
     body: formData,
+    // DO NOT set Content-Type header; browser will set multipart/form-data boundary
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || 'Upload failed');
+    const text = await res.text().catch(() => null);
+    throw new Error(text || `Upload failed: ${res.status}`);
   }
 
-  return res.json(); // { message, document: { ... } }
+  const json = await res.json();
+  return json;
 }
+
 
 export async function fetchDocuments() {
   const res = await fetch(`${API_BASE_URL}/documents`);

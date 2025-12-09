@@ -190,7 +190,7 @@ export default function DocumentPreview({ document: doc }) {
           </div>
         </div>
 
-        {/* <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleDownload}
@@ -205,7 +205,7 @@ export default function DocumentPreview({ document: doc }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v11.25m0 0L8.25 12m3.75 3.75L15.75 12M5.25 18.75h13.5" />
             </svg>
           </button>
-        </div> */}
+        </div>
       </div>
 
       {/* BODY */}

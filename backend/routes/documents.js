@@ -11,8 +11,8 @@ router.get('/', documentsController.listDocuments);
 router.get('/:id', documentsController.getDocumentById);
 
 // POST /documents/upload
-// (regular upload — unchanged)
-router.post('/upload', upload.single('file'), documentsController.uploadDocument);
+router.post('/upload', upload.array('files', 50), documentsController.uploadDocuments);
+
 
 // POST /documents/upload-and-convert
 // (new) Accepts a PPT/PPTX (or other supported file), converts to PDF, and returns/stores the PDF.

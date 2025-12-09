@@ -5,6 +5,7 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 const CloudConvert = require('cloudconvert');
+   
 
 const textExtractService = require('../services/textExtractService');
 const {
@@ -56,81 +57,107 @@ exports.getDocumentById = (req, res) => {
   res.json(doc);
 };
 
-// POST /documents/upload (unchanged behavior)
-exports.uploadDocument = async (req, res) => {
+
+
+exports.uploadDocuments = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+    // multer with upload.array() sets req.files (array) instead of req.file
+    const files = req.files;
+    if (!files || !files.length) {
+      return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    const file = req.file;
+    const processed = [];
 
-    // Step 1 — Extract text and/or table from the uploaded file (this handles PDFs, docs, txt, csv, etc.)
-    const extraction = await textExtractService.extractText(
-      file.path,
-      file.mimetype,
-      file.originalname
-    );
+    // Process files sequentially to avoid heavy parallel CPU/disk spikes.
+    // If you want concurrency later, we can run Promise.all with limits.
+    for (const file of files) {
+      try {
+        // Step 1 — Extract text and/or table (reuse your existing service)
+        const extraction = await textExtractService.extractText(
+          file.path,
+          file.mimetype,
+          file.originalname
+        );
 
-    const extractedText = extraction.extractedText || '';
-    const tableRows = extraction.tableRows || null;
-    const isTable = extraction.isTable || false;
+        const extractedText = extraction.extractedText || '';
+        const tableRows = extraction.tableRows || null;
+        const isTable = extraction.isTable || false;
 
-    // Step 2 — Create preview
-    const preview =
-      extractedText.length > 500
-        ? extractedText.slice(0, 500) + '...'
-        : extractedText;
+        // Step 2 — Create preview
+        const preview =
+          extractedText.length > 500
+            ? extractedText.slice(0, 500) + '...'
+            : extractedText;
 
-    // Step 3 — Build canonical PDF filename
-    const baseName = path.basename(file.filename, path.extname(file.filename));
-    const pdfFileName = `${baseName}-canonical.pdf`;
-    const pdfPath = path.join(pdfDir, pdfFileName);
+        // Step 3 — Build canonical PDF filename
+        const baseName = path.basename(file.filename, path.extname(file.filename));
+        const pdfFileName = `${baseName}-canonical.pdf`;
+        const pdfPath = path.join(pdfDir, pdfFileName); // ensure pdfDir is in scope
 
-    // Step 4 — Create PDF (table or text)
-    if (isTable && tableRows) {
-      await createPdfFromTable(tableRows, pdfPath);
-    } else {
-      await createPdfFromText(extractedText, pdfPath);
+        // Step 4 — Create PDF (table or text)
+        if (isTable && tableRows) {
+          await createPdfFromTable(tableRows, pdfPath);
+        } else {
+          await createPdfFromText(extractedText, pdfPath);
+        }
+
+        // Step 5 — Build document record (match your existing structure)
+        const docRecord = {
+          id: nextId++,
+          originalFileName: file.originalname,
+          storedFileName: file.filename,
+          mimeType: file.mimetype,
+          size: file.size,
+          path: file.path,
+          pdfPath,
+          extractedText,
+          preview,
+          isTable,
+          tableRows,
+        };
+
+        documents.push(docRecord);
+
+        // Add to the per-request processed result
+        processed.push({
+          success: true,
+          message: 'File processed successfully',
+          document: {
+            id: docRecord.id,
+            originalFileName: docRecord.originalFileName,
+            storedFileName: docRecord.storedFileName,
+            mimeType: docRecord.mimeType,
+            size: docRecord.size,
+            preview: docRecord.preview,
+            pdfPath: docRecord.pdfPath,
+            isTable: docRecord.isTable,
+          },
+        });
+      } catch (fileError) {
+        console.error(`Error processing file ${file.originalname}:`, fileError);
+        processed.push({
+          success: false,
+          message: `Error processing file ${file.originalname}: ${fileError.message}`,
+          originalFileName: file.originalname,
+        });
+      }
     }
 
-    const docRecord = {
-      id: nextId++,
-      originalFileName: file.originalname,
-      storedFileName: file.filename,
-      mimeType: file.mimetype,
-      size: file.size,
-      path: file.path,
-      pdfPath,
-      extractedText,
-      preview,
-      isTable,
-      tableRows,
-    };
-
-    documents.push(docRecord);
-
+    // Return array of results for each file
     res.status(201).json({
-      message: 'File processed successfully',
-      document: {
-        id: docRecord.id,
-        originalFileName: docRecord.originalFileName,
-        storedFileName: docRecord.storedFileName,
-        mimeType: docRecord.mimeType,
-        size: docRecord.size,
-        preview: docRecord.preview,
-        pdfPath: docRecord.pdfPath,
-        isTable: docRecord.isTable,
-      },
+      message: 'Files processed',
+      results: processed,
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('Upload (multiple) error:', error);
     res.status(500).json({
-      message: 'Error processing file',
+      message: 'Error processing uploaded files',
       error: error.message,
     });
   }
 };
+
 
 /**
  * POST /documents/upload-and-convert
