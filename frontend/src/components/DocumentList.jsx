@@ -244,7 +244,9 @@ export default function DocumentList({
             <div className="bg-slate-900/95 border border-slate-800/80 rounded-2xl shadow-[0_18px_45px_rgba(2,6,23,0.75)] p-5">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-lg bg-rose-500/10 border border-rose-400/20 flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-lg bg-rose-500/10 cursor-pointer border border-rose-400/20 flex items-center justify-center"
+                  onClick={closeConfirm}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5 text-rose-300"

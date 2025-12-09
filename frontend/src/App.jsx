@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import FileUpload from './components/FileUpload';
 import DocumentList from './components/DocumentList';
 import DocumentPreview from './components/DocumentPreview';
-import { fetchDocuments, fetchDocumentById } from './api/client';
+import { fetchDocuments, fetchDocumentById, API_BASE_URL } from './api/client';
 
 function App() {
   const [documents, setDocuments] = useState([]);
@@ -127,48 +127,50 @@ function App() {
   // -----------------------
   // Delete functionality
   // -----------------------
-  const handleDelete = async (id) => {
-    try {
-      const docToDelete = documents.find((d) => d.id === id);
-      const name = docToDelete?.originalFileName || 'this file';
+  const handleDelete = async (id, opts = {}) => {
+  try {
+    const docToDelete = documents.find((d) => d.id === id);
+    const name = docToDelete?.originalFileName || 'this file';
 
-      // Simple confirmation dialog — DocumentList may implement themed modal, but keep a safety confirm here
+    // If parent is called from DocumentList and it passed skipConfirm, skip showing native confirm.
+    // If opts.skipConfirm is falsey and you still want a native confirm as a fallback, you can use it.
+    if (!opts.skipConfirm) {
       const ok = window.confirm(`Are you sure you want to delete "${name}"? This cannot be undone.`);
       if (!ok) return;
-
-      // Call backend DELETE. Using relative path to play nice with proxy or same-origin setups.
-      const res = await fetch(`/documents/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => null);
-        throw new Error(`Delete failed (${res.status}) ${text ? '- ' + text : ''}`);
-      }
-
-      // Update client state (remove the doc)
-      setDocuments((prev) => prev.filter((d) => d.id !== id));
-
-      // If the deleted doc was selected, clear selectedDoc and choose a new one
-      if (selectedId === id) {
-        setSelectedId(null);
-        setSelectedDoc(null);
-
-        // pick a new first doc from the filtered list (after removal)
-        const remaining = documents.filter((d) => d.id !== id);
-        if (remaining.length > 0) {
-          // load details for the first remaining doc
-          handleSelectDocument(remaining[0].id);
-        }
-      }
-    } catch (err) {
-      console.error('Delete error:', err);
-      // Show a friendly message
-      setError(err.message || 'Failed to delete document');
-      // Optionally refresh documents to sync state
-      loadDocuments();
     }
-  };
+
+    // Call backend DELETE using API_BASE_URL helper
+    setLoadingDocs(true);
+    const res = await fetch(`${API_BASE_URL}/documents/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => null);
+      throw new Error(`Delete failed (${res.status}) ${text ? '- ' + text : ''}`);
+    }
+
+    // Update state (remove the document)
+    const updatedDocs = documents.filter((d) => d.id !== id);
+    setDocuments(updatedDocs);
+
+    // If the deleted doc was selected, clear selection and pick a new one
+    if (selectedId === id) {
+      setSelectedId(null);
+      setSelectedDoc(null);
+      if (updatedDocs.length > 0) {
+        handleSelectDocument(updatedDocs[0].id);
+      }
+    }
+
+    setLoadingDocs(false);
+  } catch (err) {
+    console.error('Delete error:', err);
+    setError(err.message || 'Failed to delete document');
+    setLoadingDocs(false);
+    loadDocuments();
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50">

@@ -26,4 +26,7 @@ router.post(
 // GET /documents/:id/pdf
 router.get('/:id/pdf', documentsController.downloadDocumentPdf);
 
+router.delete('/:id', documentsController.deleteDocument);
+
+
 module.exports = router;

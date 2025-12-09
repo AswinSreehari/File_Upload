@@ -392,3 +392,48 @@ exports.downloadDocumentPdf = (req, res) => {
     }
   });
 };
+
+exports.deleteDocument = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ message: 'Invalid id' });
+    }
+
+    // 'documents' should be your in-memory array declared in this module scope
+    const idx = documents.findIndex((d) => d.id === id);
+    if (idx === -1) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    // remove record
+    const [removed] = documents.splice(idx, 1);
+
+    // remove uploaded original file (if you want)
+    try {
+      if (removed && removed.path) {
+        fs.unlink(removed.path, (err) => {
+          if (err) {
+            // log but don't fail the request
+            console.warn('Failed to unlink uploaded file:', removed.path, err.message);
+          }
+        });
+      }
+      // remove generated canonical pdf if exists
+      if (removed && removed.pdfPath) {
+        fs.unlink(removed.pdfPath, (err) => {
+          if (err) {
+            console.warn('Failed to unlink pdf file:', removed.pdfPath, err.message);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Cleanup error:', err.message);
+    }
+
+    return res.json({ success: true, id });
+  } catch (err) {
+    console.error('DeleteDocument error:', err);
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
