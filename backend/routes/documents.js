@@ -11,8 +11,19 @@ router.get('/', documentsController.listDocuments);
 router.get('/:id', documentsController.getDocumentById);
 
 // POST /documents/upload
+// (regular upload — unchanged)
 router.post('/upload', upload.single('file'), documentsController.uploadDocument);
 
+// POST /documents/upload-and-convert
+// (new) Accepts a PPT/PPTX (or other supported file), converts to PDF, and returns/stores the PDF.
+// Uses the same upload middleware so req.file.buffer is available to the controller.
+router.post(
+  '/upload-and-convert',
+  upload.single('file'),
+  documentsController.uploadAndConvert
+);
+
+// GET /documents/:id/pdf
 router.get('/:id/pdf', documentsController.downloadDocumentPdf);
 
 module.exports = router;

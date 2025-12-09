@@ -1,31 +1,53 @@
 // src/components/FileUpload.jsx
-import { useState } from 'react';
-import { uploadDocument } from '../api/client';
+import { useState } from "react";
+import { uploadDocument } from "../api/client";
 
 export default function FileUpload({ onUploadSuccess }) {
   const [file, setFile] = useState(null);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (e) => {
     const selected = e.target.files?.[0];
     setFile(selected || null);
-    setStatus('');
+    setStatus("");
+  };
+
+  // DRAG & DROP HANDLERS
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      setFile(droppedFile);
+      setStatus("");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
-      setStatus('⚠️ Please select a file.');
+      setStatus("⚠️ Please select a file.");
       return;
     }
 
     setLoading(true);
-    setStatus('⏳ Uploading and processing...');
+    setStatus("⏳ Uploading and processing...");
 
     try {
       const response = await uploadDocument(file);
-      setStatus(response.message || '✔️ File processed successfully');
+      setStatus(response.message || "✔️ File processed successfully");
 
       if (onUploadSuccess) {
         onUploadSuccess(response.document);
@@ -35,7 +57,7 @@ export default function FileUpload({ onUploadSuccess }) {
       e.target.reset();
     } catch (err) {
       console.error(err);
-      setStatus(`❌ ${err.message || 'Upload failed'}`);
+      setStatus(`❌ ${err.message || "Upload failed"}`);
     } finally {
       setLoading(false);
     }
@@ -46,7 +68,6 @@ export default function FileUpload({ onUploadSuccess }) {
       <h2 className="text-lg font-semibold tracking-wide text-slate-100 mb-1">
         Upload Document
       </h2>
-       
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* DROPZONE */}
@@ -54,17 +75,33 @@ export default function FileUpload({ onUploadSuccess }) {
           <span className="sr-only">Choose file</span>
 
           <div
-            className="flex flex-col items-center justify-center px-5 py-8
-                       rounded-xl border-2 border-dashed 
-                       border-slate-700/70 group-hover:border-emerald-400/70
-                       bg-slate-900/50 group-hover:bg-slate-900/40
-                       transition-all duration-200 shadow-inner"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`flex flex-col items-center justify-center px-5 py-8
+              rounded-xl border-2 border-dashed transition-all duration-200 shadow-inner
+              ${
+                isDragging
+                  ? "border-emerald-400 bg-slate-900/40"
+                  : "border-slate-700/70 bg-slate-900/50"
+              }
+            `}
           >
             {/* Icon */}
-            <div className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-900/70 border border-slate-700/60 group-hover:border-emerald-400/70 shadow-[0_0_15px_rgba(16,185,129,0.35)] transition">
+            <div
+              className={`h-10 w-10 flex items-center justify-center rounded-full border shadow transition
+                ${
+                  isDragging
+                    ? "border-emerald-400 bg-slate-900/80 shadow-[0_0_20px_rgba(16,185,129,0.45)]"
+                    : "border-slate-700/60 bg-slate-900/70"
+                }
+              `}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-slate-300 group-hover:text-emerald-300 transition-all duration-200"
+                className={`h-6 w-6 transition ${
+                  isDragging ? "text-emerald-300" : "text-slate-300"
+                }`}
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.4}
@@ -79,13 +116,21 @@ export default function FileUpload({ onUploadSuccess }) {
               </svg>
             </div>
 
-            {/* Filename or call to upload */}
-            <span className="text-sm font-medium text-slate-200 mt-3 group-hover:text-emerald-300 transition">
-              {file ? file.name : 'Click to choose a file'}
+            {/* File name or placeholder */}
+            <span
+              className={`text-sm font-medium mt-3 transition ${
+                isDragging ? "text-emerald-300" : "text-slate-200"
+              }`}
+            >
+              {file ? file.name : isDragging ? "Drop here…" : "Click to choose a file"}
             </span>
 
-            <span className="text-[10px] mt-1 text-slate-500 group-hover:text-slate-400 transition">
-              or drag and drop (browser default)
+            <span
+              className={`text-[10px] mt-1 transition ${
+                isDragging ? "text-slate-300" : "text-slate-500"
+              }`}
+            >
+              or drag and drop
             </span>
 
             <input
@@ -108,7 +153,7 @@ export default function FileUpload({ onUploadSuccess }) {
                      shadow-[0_0_18px_rgba(52,211,153,0.4)]
                      transition-all duration-200"
         >
-          {loading ? 'Processing...' : 'Upload & Convert'}
+          {loading ? "Processing..." : "Upload & Convert"}
         </button>
       </form>
 
