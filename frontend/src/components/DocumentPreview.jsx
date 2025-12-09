@@ -216,7 +216,7 @@ export default function DocumentPreview({ document: doc }) {
         )}
 
         {!loadingPdf && pdfBlobUrl && (
-          <div className="w-full h-[80vh] bg-white rounded-md overflow-hidden" style={{ minHeight: 400 }}>
+          <div className="w-full h-[98vh] bg-white rounded-md overflow-hidden" style={{ minHeight: 400 }}>
             <iframe
               ref={iframeRef}
               title="Document PDF preview"
@@ -228,57 +228,32 @@ export default function DocumentPreview({ document: doc }) {
 
         {/* If PDF not available, show a fallback message + extracted content */}
         {!loadingPdf && !pdfBlobUrl && (
-          <div className="space-y-4">
-            <div className="text-xs text-slate-400">Visual preview not available — showing extracted content below.</div>
+  <div className="space-y-4">
+    <div className="text-xs text-slate-400">Visual preview not available — showing extracted content below.</div>
 
-            {/* TABLE PREVIEW */}
-            {isTable && Array.isArray(tableRows) && tableRows.length > 0 && (
-              <div className="border border-slate-700/80 rounded-xl bg-slate-900/70 shadow-xl">
-                <div className="px-4 py-2.5 border-b border-slate-800/80 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <h3 className="text-xs font-semibold tracking-wide text-slate-50">
-                      Table Preview
-                    </h3>
-                  </div>
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wide">
-                    {tableRows.length} rows
-                  </span>
-                </div>
+    {/* TABLE PREVIEW */}
+    {isTable && Array.isArray(tableRows) && tableRows.length > 0 && (
+      <div className="border border-slate-700/80 rounded-xl bg-slate-900/70 shadow-xl">
+        ...
+      </div>
+    )}
 
-                <div className="w-full max-w-full overflow-x-auto overflow-y-auto max-h-[60vh] p-2">
-                  <table className="min-w-max text-[11px] border-collapse">
-                    <tbody>
-                      {tableRows.map((row, rowIndex) => (
-                        <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-slate-900/60" : "bg-slate-900/30"}>
-                          {row.map((cell, cellIndex) => (
-                            <td key={cellIndex} className="border border-slate-800/80 px-3 py-2 whitespace-nowrap text-slate-100/90">
-                              {cell !== null && cell !== undefined ? cell.toString() : ""}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+    {/* TEXT PREVIEW */}
+    {!isTable && (
+      <div className="border h-[80vh] no-scrollbar border-slate-700/80 rounded-xl bg-slate-900/70 shadow-xl overflow-auto">
+        <div className="px-4 py-2.5 border-b border-slate-800/80 flex items-center justify-between">
+          <div />
+          <span className="text-[10px] text-slate-400 uppercase tracking-wide">Read-only</span>
+        </div>
 
-            {/* TEXT PREVIEW */}
-            {!isTable && (
-              <div className="border h-[60vh] no-scrollbar border-slate-700/80 rounded-xl bg-slate-900/70 shadow-xl overflow-auto">
-                <div className="px-4 py-2.5 border-b border-slate-800/80 flex items-center justify-between">
-                  <div />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wide">Read-only</span>
-                </div>
+        <pre className="text-[13px] leading-relaxed h-full text-slate-100/90 no-scrollbar bg-slate-950/40 font-mono p-4 rounded-b-xl overflow-y-auto overflow-x-auto whitespace-pre break-words max-w-full [tab-size:2]">
+          {extractedText || "(No text extracted)"}
+        </pre>
+      </div>
+    )}
+  </div>
+)}
 
-                <pre className="text-[13px] leading-relaxed h-full text-slate-100/90 no-scrollbar bg-slate-950/40 font-mono p-4 rounded-b-xl overflow-y-auto overflow-x-auto whitespace-pre break-words max-w-full [tab-size:2]">
-                  {extractedText || "(No text extracted)"}
-                </pre>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
