@@ -148,7 +148,7 @@ export default function FileUpload({ onUploadSuccess }) {
             </span>
 
             <span className={`text-[10px] mt-1 transition ${isDragging ? "text-slate-300" : "text-slate-500"}`}>
-              or drag and drop (multiple)
+              or drag and drop
             </span>
 
             <input

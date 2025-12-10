@@ -184,8 +184,9 @@ export default function DocumentPreview({ document: doc }) {
               Preview
             </h2>
             <p className="text-[11px] text-slate-300/80 truncate">
-              {originalFileName || 'Untitled'} · {mimeType || 'unknown'} ·{' '}
+              {originalFileName || 'Untitled'}{' '}·{' '}
               {size !== undefined && size !== null ? formatBytes(size) : '—'}
+              {/* · {mimeType || 'unknown'} */}
             </p>
           </div>
         </div>
